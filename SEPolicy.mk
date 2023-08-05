@@ -32,7 +32,18 @@ PRODUCT_PRIVATE_SEPOLICY_DIRS := \
     $(QSSI_SEPOLICY_PATH)/generic/product/private \
     $(QSSI_SEPOLICY_PATH)/qva/product/private
 
-ifeq (,$(filter sdm845 sdm710, $(TARGET_BOARD_PLATFORM)))
+INT_USES_LEGACY_SEPOLICY ?= true
+ifneq ($(TARGET_BOARD_PLATFORM), sdm710)
+ifeq ($(TARGET_BOARD_PLATFORM), sdm845)
+ifeq ($(TARGET_KERNEL_VERSION), 4.19)
+INT_USES_LEGACY_SEPOLICY := false
+endif # TARGET_KERNEL_VERSION == 4.19
+else
+INT_USES_LEGACY_SEPOLICY := false
+endif # TARGET_BOARD_PLATFORM == sdm845
+endif # TARGET_BOARD_PLATFORM != sdm710
+
+ifneq ($(INT_USES_LEGACY_SEPOLICY), true)
     BOARD_VENDOR_SEPOLICY_DIRS := \
        $(BOARD_VENDOR_SEPOLICY_DIRS) \
        $(SEPOLICY_PATH) \
@@ -63,9 +74,9 @@ ifeq (,$(filter sdm845 sdm710, $(TARGET_BOARD_PLATFORM)))
       BOARD_VENDOR_SEPOLICY_DIRS += $(SEPOLICY_PATH)/qva/vendor/test/sysmonapp
       BOARD_VENDOR_SEPOLICY_DIRS += $(SEPOLICY_PATH)/qva/vendor/test/mst_test_app
     endif
-endif
+endif # !INT_USES_LEGACY_SEPOLICY
 
-ifneq (,$(filter sdm845 sdm710, $(TARGET_BOARD_PLATFORM)))
+ifeq ($(TARGET_BOARD_PLATFORM), sdm710)
     BOARD_VENDOR_SEPOLICY_DIRS := \
                  $(BOARD_VENDOR_SEPOLICY_DIRS) \
                  $(SEPOLICY_PATH) \
@@ -92,4 +103,4 @@ ifneq (,$(filter sdm845 sdm710, $(TARGET_BOARD_PLATFORM)))
       BOARD_VENDOR_SEPOLICY_DIRS += $(SEPOLICY_PATH)/legacy/vendor/test/sysmonapp
       BOARD_VENDOR_SEPOLICY_DIRS += $(SEPOLICY_PATH)/legacy/vendor/test/mst_test_app
     endif
-endif
+endif # TARGET_BOARD_PLATFORM == sdm710
